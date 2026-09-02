@@ -67,9 +67,27 @@ class fetchNodeDetailsTests: XCTestCase {
     func test_getMetadata_Mainnet() async throws {
         let fnd = NodeDetailManager(network: .MAINNET)
         let result = try await fnd.getMetadataUrl()
-        XCTAssertEqual(result, "https://metadata.web3auth.io")
+        XCTAssertEqual(result, LEGACY_METADATA_MAP[.production])
     }
     
+    func test_constants_match_fnd_web() {
+        XCTAssertEqual(FND_SERVER_MAP[.production], "https://api.web3auth.io/fnd-service")
+        XCTAssertEqual(FND_SERVER_MAP[.development], "https://api-develop.web3auth.io/fnd-service")
+        XCTAssertEqual(CITADEL_SERVER_MAP[.production], "https://api.web3auth.io/citadel-service")
+        XCTAssertEqual(DASHBOARD_PUBLIC_API_MAP[.production], "https://api.web3auth.io/signer-service")
+        XCTAssertEqual(STORAGE_SERVER_MAP[.production], "https://api.web3auth.io/session-service")
+        XCTAssertEqual(STORAGE_SERVER_SOCKET_URL_MAP[.development], "https://develop-session.web3auth.io")
+        XCTAssertEqual(LEGACY_METADATA_MAP[.production], "https://api.web3auth.io/metadata-service")
+        XCTAssertEqual(Web3AuthKeyType.secp256k1.rawValue, "secp256k1")
+        XCTAssertEqual(Web3AuthSigType.ecdsaSecp256k1.rawValue, "ecdsa-secp256k1")
+    }
+
+    func test_getMetadata_Mainnet_development() async throws {
+        let fnd = NodeDetailManager(network: .MAINNET, buildEnv: .development)
+        let result = try await fnd.getMetadataUrl()
+        XCTAssertEqual(result, LEGACY_METADATA_MAP[.development])
+    }
+
     func test_getMetadata_SapphireMainnet() async throws {
         let fnd = NodeDetailManager(network: .SAPPHIRE_MAINNET)
         let result = try await fnd.getMetadataUrl()

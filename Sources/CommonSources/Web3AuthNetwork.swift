@@ -15,8 +15,9 @@ public enum Web3AuthNetwork : Equatable, Hashable, Codable {
         return self.torusNetwork.name
     }
     
+    @available(*, deprecated, message: "Use CITADEL_SERVER_MAP[buildEnv] or DASHBOARD_PUBLIC_API_MAP[buildEnv] instead")
     public var signerMap: String {
-        return self.torusNetwork.signerMap
+        return CITADEL_SERVER_MAP[.production]!
     }
     
     public var isLegacy: Bool {
@@ -33,10 +34,11 @@ public enum Web3AuthNetwork : Equatable, Hashable, Codable {
         return false
     }
     
+    @available(*, deprecated, message: "Use LEGACY_METADATA_MAP[buildEnv] for legacy networks, or NodeDetailManager.getMetadataUrl()")
     public var metadataMap: String {
         get throws {
-            if case .legacy(let legacyNetwork) = torusNetwork {
-                return legacyNetwork.metadataMap
+            if case .legacy = torusNetwork {
+                return LEGACY_METADATA_MAP[.production]!
             }
             
             if case .sapphire(let sapphireNetwork) = torusNetwork {
