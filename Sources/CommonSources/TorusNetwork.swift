@@ -22,6 +22,7 @@ internal enum TorusNetwork : Equatable, Hashable {
         }
     }
     
+    @available(*, deprecated, message: "Use CITADEL_SERVER_MAP[buildEnv] or DASHBOARD_PUBLIC_API_MAP[buildEnv] instead")
     public var signerMap :  String {
         switch self {
         case .legacy(let network) :
@@ -54,11 +55,9 @@ public enum SapphireNetwork: Equatable, Hashable {
         }
     }
     
+    @available(*, deprecated, message: "Use CITADEL_SERVER_MAP[buildEnv] or DASHBOARD_PUBLIC_API_MAP[buildEnv] instead")
     public var signerMap : String {
-        switch self {
-        case .SAPPHIRE_MAINNET: return "https://signer.web3auth.io"
-        case .SAPPHIRE_DEVNET: return "https://signer.web3auth.io"
-        }
+        return CITADEL_SERVER_MAP[.production]!
     }
 }
 
@@ -120,24 +119,14 @@ public enum LegacyNetwork: Equatable, Hashable {
         }
     }
     
+    @available(*, deprecated, message: "Use CITADEL_SERVER_MAP[buildEnv] or DASHBOARD_PUBLIC_API_MAP[buildEnv] instead")
     public var signerMap : String {
-        switch self {
-        case .MAINNET: return "https://signer.web3auth.io"
-        case .TESTNET: return "https://signer.web3auth.io"
-        case .CYAN: return "https://signer-polygon.web3auth.io"
-        case .AQUA: return "https://signer-polygon.web3auth.io"
-        case .CELESTE: return "https://signer-polygon.web3auth.io"
-        }
+        return CITADEL_SERVER_MAP[.production]!
     }
     
+    @available(*, deprecated, message: "Use LEGACY_METADATA_MAP[buildEnv] instead")
     public var metadataMap: String {
-        switch self {
-        case .MAINNET: return "https://metadata.web3auth.io"
-        case .TESTNET: return "https://metadata.web3auth.io"
-        case .CYAN: return "https://metadata.web3auth.io"
-        case .AQUA: return "https://metadata.web3auth.io"
-        case .CELESTE: return "https://metadata.web3auth.io"
-        }
+        return LEGACY_METADATA_MAP[.production]!
     }
 }
 

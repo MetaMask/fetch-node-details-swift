@@ -6,7 +6,7 @@ var fndLogType = OSLogType.default
 
 open class NodeDetailManager {
     
-    private var fndServerEndpoint = "https://fnd.web3auth.io/node-details"
+    private var fndServerEndpoint: String
     private var currentEpoch: String = "0"
     private var torusNodeEndpoints = [String]()
     private var torusNodePub: [TorusNodePubModel] = []
@@ -16,6 +16,9 @@ open class NodeDetailManager {
     private var torusNodeTSSEndpoints: [String] = []
 
     private var network: Web3AuthNetwork = .SAPPHIRE_MAINNET
+    private var buildEnv: BuildEnv = .production
+    private var keyType: Web3AuthKeyType = .secp256k1
+    private var sigType: Web3AuthSigType = .ecdsaSecp256k1
 
     private var urlSession: URLSession
     private var updated = false
@@ -24,12 +27,25 @@ open class NodeDetailManager {
     }
 
 
-    public init(network: Web3AuthNetwork, fndEndpoint: String? = nil, logLevel: OSLogType = .default, urlSession: URLSession = URLSession.shared) {
+    public init(
+        network: Web3AuthNetwork,
+        fndEndpoint: String? = nil,
+        logLevel: OSLogType = .default,
+        urlSession: URLSession = URLSession.shared,
+        buildEnv: BuildEnv = .production,
+        keyType: Web3AuthKeyType = .secp256k1,
+        sigType: Web3AuthSigType = .ecdsaSecp256k1
+    ) {
         fndLogType = logLevel // to be used across application
         self.network = network
         self.urlSession = urlSession
+        self.buildEnv = buildEnv
+        self.keyType = keyType
+        self.sigType = sigType
         if let endpoint = fndEndpoint, !endpoint.isEmpty {
             self.fndServerEndpoint = endpoint
+        } else {
+            self.fndServerEndpoint = "\(FND_SERVER_MAP[buildEnv]!)/node-details"
         }
     }
     
@@ -50,12 +66,14 @@ open class NodeDetailManager {
         do {
             guard let urlEncodedVerifier = verifier.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
                   let urlEncodedVerifierID = verifierID.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-                  let urlEncodedNetwork = network.name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+                  let urlEncodedNetwork = network.name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                  let urlEncodedKeyType = keyType.rawValue.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
+                  let urlEncodedSigType = sigType.rawValue.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
             else {
                 throw FetchNodeError.InvalidInput
             }
             
-            guard let url = URL(string: "\(fndServerEndpoint)?network=\(urlEncodedNetwork)&verifier=\(urlEncodedVerifier)&verifierId=\(urlEncodedVerifierID)") else {
+            guard let url = URL(string: "\(fndServerEndpoint)?network=\(urlEncodedNetwork)&verifier=\(urlEncodedVerifier)&verifierId=\(urlEncodedVerifierID)&keyType=\(urlEncodedKeyType)&sigType=\(urlEncodedSigType)") else {
                 throw FetchNodeError.InvalidURL
             }
             let (data, _) = try await URLSession.shared.data(from: url)
@@ -74,9 +92,9 @@ open class NodeDetailManager {
     
     public func getMetadataUrl() async throws -> String {
         switch network.torusNetwork {
-        case .legacy(let legacyNetwork):
-            return legacyNetwork.metadataMap
-        case .sapphire(_):
+        case .legacy:
+            return LEGACY_METADATA_MAP[buildEnv]!
+        case .sapphire:
             return try await self.getNodeDetails(verifier: "test-verifier", verifierID: "test-verifier-id").getTorusNodeEndpoints()[0].replacingOccurrences(of: "/sss/jrpc", with: "/metadata")
         }
     }
